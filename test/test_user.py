@@ -1,36 +1,32 @@
-# from fastapi.testclient import TestClient
-# from app.main import app
-# import pytest
-# from app.database import Base
-# from datetime import datetime, timezone
-# from app import schema,config
-# from sqlalchemy.ext.declarative import declarative_base
-# from app.config import settings
-# from sqlalchemy import create_engine
-# from sqlalchemy.orm import sessionmaker
-# from app.database import get_db
-# SQLALCHEMY_DATABASE_URL = config.settings.test_DB
-# engine= create_engine(SQLALCHEMY_DATABASE_URL) #type: ignore
-# TestingSessionLocal=sessionmaker(autocommit=False,autoflush=False,bind=engine) #we are overriding prev dbsession
-# Base.metadata.create_all(bind=engine) 
+import pytest
+import os
+from jose import jwt
+from app import schema,config
+from .db import client,session
+from datetime import datetime, timezone
+import pytest
+from app.config import settings
+SECRET_KEY = settings.SECRET_KEY
+ALGORITHM = 'HS256'
+ACCESS_TOKEN_EXPIRE_MINUTES=30
+now = datetime.now(timezone.utc).timestamp()
 
-# def override_get_db():
-#     db=TestingSessionLocal()
-#     try:
-#         yield db
-#     finally:
-#         db.close()
-
-# client = TestClient(app)
-# now = datetime.now(timezone.utc).timestamp()
-
-# def test_root():
-#     res = client.get("post/sqlalchemy")
-#     assert res.status_code == 200
-# def test_login():
-#     res = client.post("/user/login",json={"email":"userexample2@gmail.com","password":"string"})
-#     print(res.json())
-#     newuser = schema.UserResponse(**res.json()) #just check if schema is working
-#     assert datetime.fromisoformat(res.json().get("created_at")).timestamp() == pytest.approx(now,abs=3)
-#     assert res.status_code == 201
-# app.dependency_overrides[get_db] = override_get_db
+def test_root(client): #now if i give access to the session i can access db 
+    res = client.get("post/sqlalchemy")
+    assert res.status_code == 200
+def test_login(client):
+    res = client.post("/user/login",json={"email":"userexample222@gmail.com","password":"string"})
+    print(res.json())
+    newuser = schema.UserResponse(**res.json()) #just check if schema is working
+    assert datetime.fromisoformat(res.json().get("created_at")).timestamp() == pytest.approx(now,abs=3)
+    assert res.status_code == 201
+#app.dependency_overrides[get_db] = override_get_db
+def test_login_user(client,fixture_user):#btw client alrady in fixture
+    res=client.post("/jwt/login/",data={"username":fixture_user['email'],"password": fixture_user['password']})
+    login_res=schema.Tokenreturn(**res.json())
+    payload = jwt.decode(login_res.access_token,SECRET_KEY,algorithms=[ALGORITHM])#type:ignore
+    id = payload.get("user_id")
+    print("LOGIN:", res.status_code, res.json())
+    assert id == fixture_user['id']
+    assert login_res.token_type == "bearer"
+    assert res.status_code == 200
