@@ -17,7 +17,10 @@ from app import schema,config
 from .db import client,session
 from datetime import datetime, timezone
 import pytest
+from app import models
 from app.config import settings
+from app.OAuth2 import create_access_token
+
 SECRET_KEY = settings.SECRET_KEY
 now = datetime.now(timezone.utc).timestamp()
 #SECRET_KEY = os.environ.get("SECRET_KEY") #always string #use config file as it is reloded
@@ -78,3 +81,39 @@ TestingSessionLocal=sessionmaker(autocommit=False,autoflush=False,bind=engine) #
 #         db.close()
 
 #client = TestClient(app)
+@pytest.fixture
+def token(fixture_user):
+     return create_access_token({"user_id":fixture_user['id']})
+@pytest.fixture
+def authorized_client(client,token):
+     client.headers={
+          **client.headers,
+          "Authorization": f"Bearer {token}"
+     }
+     return client
+@pytest.fixture
+def test_post(fixture_user,session):
+    posts_data = [{
+    "title": "first title",
+    "context": "first content",
+    "owner_id": fixture_user['id']
+    }, {
+        "title": "2nd title",
+        "context": "2nd content",
+        "owner_id": fixture_user['id']
+    }, {
+        "title": "3rd title",
+        "context": "3rd content",
+        "owner_id": fixture_user['id']
+    }]
+    # session.add_all([models.Post(title="first title", content="first content",
+    # owner_id=fixture_user['id']),
+    #              models.Post(title="2nd title", content="2nd content", owner_id=fixture_user
+    #              ['id']), models.Post(title="3rd title", content="3rd content",
+    #              owner_id=fixture_user['id'])])
+    
+         
+    session.add_all((list(map(lambda x: models.Post(**x),posts_data))))
+
+    session.commit()
+    return session.query(models.Post).all()

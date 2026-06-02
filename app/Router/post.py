@@ -30,7 +30,7 @@ def add_posts(post:schema.Postss,db: Session=Depends(get_db),get_current_user: i
     db.commit()
     db.refresh(k)
     return k
-@router.get("/lol/{id}")
+@router.get("/lol/{id}",response_model=schema.UserResponse)
 def find_post(id:int,db: Session=Depends(get_db)):
     k=db.query(models.Post).filter(models.Post.id == id).first()
     return k

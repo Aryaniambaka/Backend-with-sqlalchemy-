@@ -30,3 +30,13 @@ def test_login_user(client,fixture_user):#btw client alrady in fixture
     assert id == fixture_user['id']
     assert login_res.token_type == "bearer"
     assert res.status_code == 200
+@pytest.mark.parametrize("email, password, status",[
+    ("lol","lol",403),
+    (None,"lolu",422)
+])
+def test_incorrect_login(fixture_user,client,email,password,status):
+    # res=client.post("/jwt/login/",data={"username":fixture_user['email'],"password": fixture_user['password']})
+    res=client.post("/jwt/login/",data={"username":email,"password": password})
+
+    assert res.status_code == status
+    # assert res.json().get("detail")=="Invalid Credential"
