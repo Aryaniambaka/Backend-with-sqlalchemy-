@@ -19,7 +19,7 @@ def login(u_c:OAuth2PasswordRequestForm=Depends() ,db:Session=Depends(database.g
     #only username,password
     user1=db.query(models.User).filter(models.User.email==u_c.username).first()
     if not user1:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Invalid credential")
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Invalid Credential")
     if not utlity.verify(u_c.password,user1.password):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Invalid Credential")
     access_token = OAuth2.create_access_token(data={"user_id":user1.id})

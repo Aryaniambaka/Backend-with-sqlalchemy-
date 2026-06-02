@@ -1,4 +1,4 @@
-from .Router import post,user,auth,vote
+from app.Router import post,user,auth,vote
 from fastapi import FastAPI,Response,status,HTTPException,Depends
 from fastapi.params import Body
 from passlib.context import CryptContext

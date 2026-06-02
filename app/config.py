@@ -1,7 +1,11 @@
-from pydantic_settings import BaseSettings# use to set data type of enviromnet variable
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
 class Settings(BaseSettings):
-    DB: str #also case insensetive
-    SECRET_KEY: str = "demo" #use as default if cant fetch
-settings = Settings()#type: ignore
-class Config:
-    env_file= ".env"
+    DB: str 
+    SECRET_KEY: str = "demo" 
+    TEST_DB: str
+
+    # Pydantic V2 Modern Configuration Syntax
+    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
+
+settings = Settings() # type: ignore

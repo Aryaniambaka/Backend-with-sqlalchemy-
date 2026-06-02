@@ -14,12 +14,14 @@ from typing import Optional,List
 from random import randrange
 import psycopg2
 from . import models,schema,utlity,database
-
+from app.config import settings
 from sqlalchemy.orm import Session
 from .database import engine,SessionLocal,get_db
 #Secret_key,algoritm,expiration time 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl='/jwt/login')
-SECRET_KEY = os.environ.get("SECRET_KEY") #always string
+
+SECRET_KEY = settings.SECRET_KEY
+#SECRET_KEY = os.environ.get("SECRET_KEY") #always string
 ALGORITHM = 'HS256'
 ACCESS_TOKEN_EXPIRE_MINUTES=30
 def create_access_token(data: dict):
